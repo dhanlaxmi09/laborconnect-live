@@ -1,31 +1,17 @@
 import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
+import 'leaflet-defaulticon-compatibility';
 import { Worker } from '@/lib/demoWorkers';
 import { Phone, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
-// Fix Leaflet default icon issue
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-import iconRetina from 'leaflet/dist/images/marker-icon-2x.png';
-
-const DefaultIcon = L.icon({
-  iconUrl: icon,
-  iconRetinaUrl: iconRetina,
-  shadowUrl: iconShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-L.Marker.prototype.options.icon = DefaultIcon;
-
 // Custom green icon for available workers
-const availableIcon = L.divIcon({
-  className: 'custom-marker',
+const createAvailableIcon = () => L.divIcon({
+  className: 'custom-marker-available',
   html: `<div style="
     width: 24px;
     height: 24px;
@@ -40,8 +26,8 @@ const availableIcon = L.divIcon({
 });
 
 // Gray icon for busy workers
-const busyIcon = L.divIcon({
-  className: 'custom-marker',
+const createBusyIcon = () => L.divIcon({
+  className: 'custom-marker-busy',
   html: `<div style="
     width: 24px;
     height: 24px;
@@ -62,12 +48,12 @@ interface WorkerMapProps {
 }
 
 // Component to handle map bounds based on workers
-function MapBounds({ workers }: { workers: Worker[] }) {
+function MapBoundsUpdater({ workers }: { workers: Worker[] }) {
   const map = useMap();
   
   useEffect(() => {
     if (workers.length > 0) {
-      const bounds = L.latLngBounds(workers.map(w => [w.lat, w.lng]));
+      const bounds = L.latLngBounds(workers.map(w => [w.lat, w.lng] as L.LatLngTuple));
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
     }
   }, [workers, map]);
@@ -80,13 +66,14 @@ export function WorkerMap({ workers, selectedWorker, onSelectWorker }: WorkerMap
     window.location.href = `tel:${phone}`;
   };
 
-  const solapurCenter: [number, number] = [17.6599, 75.9064];
+  const solapurCenter: L.LatLngExpression = [17.6599, 75.9064];
 
   return (
     <div className="relative w-full h-full">
       <MapContainer
         center={solapurCenter}
         zoom={14}
+        scrollWheelZoom={true}
         style={{ height: '100%', width: '100%', minHeight: '500px' }}
         className="rounded-lg z-0"
       >
@@ -95,13 +82,13 @@ export function WorkerMap({ workers, selectedWorker, onSelectWorker }: WorkerMap
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        <MapBounds workers={workers} />
+        <MapBoundsUpdater workers={workers} />
         
-        {workers.map(worker => (
+        {workers.map((worker) => (
           <Marker
             key={worker.id}
             position={[worker.lat, worker.lng]}
-            icon={worker.available ? availableIcon : busyIcon}
+            icon={worker.available ? createAvailableIcon() : createBusyIcon()}
             eventHandlers={{
               click: () => onSelectWorker(worker)
             }}
