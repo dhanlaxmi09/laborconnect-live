@@ -1,16 +1,28 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Phone, X, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Phone, X, AlertCircle, RefreshCw, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { WorkerMap } from '@/components/WorkerMap';
 import { SearchBar } from '@/components/SearchBar';
 import { useWorkers } from '@/hooks/useWorkers';
 import { Worker } from '@/lib/demoWorkers';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const HireLabor = () => {
-  const { workers, loading, searchWorkers, clearSearch, searchQuery, noResults } = useWorkers();
+  const { workers, loading, initialLoading, searchWorkers, clearSearch, searchQuery, noResults, usingDemoData, refreshWorkers } = useWorkers();
   const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
+
+  if (initialLoading) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center gap-4 bg-background">
+        <div className="animate-spin">
+          <Database className="w-12 h-12 text-primary" />
+        </div>
+        <p className="text-muted-foreground">Loading workers from database...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -38,6 +50,20 @@ const HireLabor = () => {
             <span className="text-muted-foreground">Busy</span>
           </div>
           <div className="ml-auto flex items-center gap-2">
+            {usingDemoData && (
+              <span className="text-xs text-amber-600 bg-amber-100 px-2 py-1 rounded">
+                Demo Data
+              </span>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={refreshWorkers}
+              disabled={loading}
+              className="h-7 px-2"
+            >
+              <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+            </Button>
             {searchQuery && (
               <Button
                 variant="ghost"

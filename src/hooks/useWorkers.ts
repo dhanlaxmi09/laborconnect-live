@@ -1,21 +1,74 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { demoWorkers, Worker } from '@/lib/demoWorkers';
 import { useToast } from '@/hooks/use-toast';
 
 export function useWorkers() {
-  const [workers] = useState<Worker[]>(demoWorkers);
-  const [filteredWorkers, setFilteredWorkers] = useState<Worker[]>(demoWorkers);
+  const [workers, setWorkers] = useState<Worker[]>([]);
+  const [filteredWorkers, setFilteredWorkers] = useState<Worker[]>([]);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [noResults, setNoResults] = useState(false);
+  const [usingDemoData, setUsingDemoData] = useState(false);
   const { toast } = useToast();
 
-  const searchWorkers = useCallback(async (query: string) => {
-    setSearchQuery(query);
+  // Fetch workers from Firestore on mount
+  useEffect(() => {
+    const fetchWorkers = async () => {
+      setInitialLoading(true);
+      try {
+        const profilesRef = collection(db, 'profiles');
+        const snapshot = await getDocs(profilesRef);
+        
+        if (snapshot.empty) {
+          console.log('No profiles in Firestore, using demo data');
+          setWorkers(demoWorkers);
+          setFilteredWorkers(demoWorkers);
+          setUsingDemoData(true);
+        } else {
+          const firestoreWorkers: Worker[] = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              name: data.name || 'Unknown',
+              skill: data.skill || 'General Labor',
+              phone: data.phone || '',
+              available: data.available ?? true,
+              lat: data.lat || data.latitude || 17.6599,
+              lng: data.lng || data.longitude || 75.9064,
+            };
+          });
+          console.log(`Loaded ${firestoreWorkers.length} workers from Firestore`);
+          setWorkers(firestoreWorkers);
+          setFilteredWorkers(firestoreWorkers);
+          setUsingDemoData(false);
+        }
+      } catch (error) {
+        console.error('Error fetching from Firestore:', error);
+        toast({
+          title: "Using Demo Data",
+          description: "Could not connect to database. Showing demo workers.",
+          variant: "default",
+        });
+        setWorkers(demoWorkers);
+        setFilteredWorkers(demoWorkers);
+        setUsingDemoData(true);
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+
+    fetchWorkers();
+  }, [toast]);
+
+  const searchWorkers = useCallback(async (queryText: string) => {
+    setSearchQuery(queryText);
     setNoResults(false);
     
     // Show all workers if search is empty
-    if (!query.trim()) {
+    if (!queryText.trim()) {
       setFilteredWorkers(workers);
       return;
     }
@@ -36,7 +89,7 @@ export function useWorkers() {
                 parts: [{
                   text: `You are a skill extractor for a labor hiring app in India. 
                   
-Given this user search query: "${query}"
+Given this user search query: "${queryText}"
 
 Extract the matching skill types from this list ONLY:
 - Plumber (water pipes, taps, bathroom, toilet, drainage)
@@ -89,18 +142,18 @@ Return only the skill names, nothing else.`
           description: "AI search failed. Using basic search.",
           variant: "destructive",
         });
-        simpleSearch(query);
+        simpleSearch(queryText);
       }
     } else {
       // Fallback: simple keyword matching
-      simpleSearch(query);
+      simpleSearch(queryText);
     }
     
     setLoading(false);
   }, [workers, toast]);
 
-  const simpleSearch = (query: string) => {
-    const lowerQuery = query.toLowerCase();
+  const simpleSearch = (queryText: string) => {
+    const lowerQuery = queryText.toLowerCase();
     const filtered = workers.filter(w => 
       w.skill.toLowerCase().includes(lowerQuery) ||
       w.name.toLowerCase().includes(lowerQuery)
@@ -118,13 +171,50 @@ Return only the skill names, nothing else.`
     setNoResults(false);
   }, [workers]);
 
+  const refreshWorkers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const profilesRef = collection(db, 'profiles');
+      const snapshot = await getDocs(profilesRef);
+      
+      if (!snapshot.empty) {
+        const firestoreWorkers: Worker[] = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            name: data.name || 'Unknown',
+            skill: data.skill || 'General Labor',
+            phone: data.phone || '',
+            available: data.available ?? true,
+            lat: data.lat || data.latitude || 17.6599,
+            lng: data.lng || data.longitude || 75.9064,
+          };
+        });
+        setWorkers(firestoreWorkers);
+        setFilteredWorkers(firestoreWorkers);
+        setUsingDemoData(false);
+        toast({
+          title: "Refreshed",
+          description: `Loaded ${firestoreWorkers.length} workers from database.`,
+        });
+      }
+    } catch (error) {
+      console.error('Error refreshing workers:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
   return { 
     workers: filteredWorkers, 
     allWorkers: workers, 
-    loading, 
+    loading: loading || initialLoading,
+    initialLoading,
     searchWorkers,
     clearSearch,
     searchQuery,
-    noResults
+    noResults,
+    usingDemoData,
+    refreshWorkers
   };
 }
