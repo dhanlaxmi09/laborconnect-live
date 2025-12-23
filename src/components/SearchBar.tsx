@@ -24,15 +24,17 @@ export function SearchBar({ onSearch, loading }: SearchBarProps) {
       recognition.interimResults = false;
       recognition.lang = 'en-IN';
 
-      recognition.onresult = (event) => {
+      recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
         setQuery(transcript);
         setIsListening(false);
         // Automatically trigger search after voice input
-        onSearch(transcript);
+        if (transcript.trim()) {
+          onSearch(transcript);
+        }
       };
 
-      recognition.onerror = (event) => {
+      recognition.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
         setIsListening(false);
         toast({
@@ -58,7 +60,15 @@ export function SearchBar({ onSearch, loading }: SearchBarProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch(query);
+    if (query.trim()) {
+      onSearch(query);
+    }
+  };
+
+  const handleSearchClick = () => {
+    if (query.trim()) {
+      onSearch(query);
+    }
   };
 
   const toggleVoiceSearch = () => {
@@ -77,10 +87,6 @@ export function SearchBar({ onSearch, loading }: SearchBarProps) {
     } else {
       setIsListening(true);
       recognitionRef.current.start();
-      toast({
-        title: "Listening...",
-        description: "Speak now. Say something like 'I need a plumber'",
-      });
     }
   };
 
@@ -93,25 +99,42 @@ export function SearchBar({ onSearch, loading }: SearchBarProps) {
           placeholder='Try "I need a plumber" or "electrician"'
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="pl-12 pr-32 h-14 text-base rounded-full shadow-lg border-0 bg-card"
+          className="pl-12 pr-36 h-14 text-base rounded-full shadow-lg border-0 bg-card"
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
           {loading && (
             <Loader2 className="w-5 h-5 animate-spin text-primary" />
           )}
+          
+          {/* Listening indicator */}
+          {isListening && (
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-destructive/10 rounded-full">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive"></span>
+              </span>
+              <span className="text-xs font-medium text-destructive">Listening...</span>
+            </div>
+          )}
+          
+          {/* Search button */}
           <button
-            type="submit"
-            className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            type="button"
+            onClick={handleSearchClick}
+            disabled={!query.trim() || loading}
+            className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Search"
           >
             <Search className="w-5 h-5" />
           </button>
+          
+          {/* Voice button */}
           <button
             type="button"
             onClick={toggleVoiceSearch}
-            className={`p-2 rounded-full transition-colors ${
+            className={`p-2 rounded-full transition-all ${
               isListening 
-                ? 'bg-destructive text-destructive-foreground animate-pulse' 
+                ? 'bg-destructive text-destructive-foreground animate-pulse ring-2 ring-destructive ring-offset-2' 
                 : 'bg-primary/10 text-primary hover:bg-primary/20'
             }`}
             aria-label={isListening ? "Stop listening" : "Start voice search"}
