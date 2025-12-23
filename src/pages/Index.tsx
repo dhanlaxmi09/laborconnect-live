@@ -1,10 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Users, Briefcase, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
 const Index = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 flex flex-col">
+  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 flex flex-col">
       {/* Header */}
       <header className="p-6">
         <div className="flex items-center gap-2">
@@ -31,10 +29,7 @@ const Index = () => {
         {/* Action Buttons */}
         <div className="w-full max-w-sm space-y-4">
           <Link to="/hire" className="block">
-            <Button 
-              size="lg" 
-              className="w-full h-20 text-lg gap-3 rounded-2xl shadow-lg hover:shadow-xl transition-all group"
-            >
+            <Button size="lg" className="w-full h-20 text-lg gap-3 rounded-2xl shadow-lg hover:shadow-xl transition-all group">
               <div className="w-12 h-12 rounded-xl bg-primary-foreground/20 flex items-center justify-center">
                 <Users className="w-6 h-6" />
               </div>
@@ -47,16 +42,12 @@ const Index = () => {
           </Link>
 
           <Link to="/laborer" className="block">
-            <Button 
-              variant="secondary"
-              size="lg" 
-              className="w-full h-20 text-lg gap-3 rounded-2xl shadow-lg hover:shadow-xl transition-all group border-2"
-            >
+            <Button variant="secondary" size="lg" className="w-full h-20 text-lg gap-3 rounded-2xl shadow-lg hover:shadow-xl transition-all group border-2">
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Briefcase className="w-6 h-6 text-primary" />
               </div>
               <div className="flex-1 text-left">
-                <div className="font-semibold text-foreground">I am a Laborer</div>
+                <div className="font-semibold text-foreground">I am a Labor</div>
                 <div className="text-sm text-muted-foreground">Register & get hired</div>
               </div>
               <ArrowRight className="w-5 h-5 text-foreground group-hover:translate-x-1 transition-transform" />
@@ -87,8 +78,6 @@ const Index = () => {
       <footer className="p-6 text-center text-sm text-muted-foreground">
         Connecting workers with opportunities in Solapur
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
