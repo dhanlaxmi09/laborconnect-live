@@ -93,12 +93,19 @@ export function SearchBar({ onSearch, loading }: SearchBarProps) {
           placeholder='Try "I need a plumber" or "electrician"'
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="pl-12 pr-20 h-14 text-base rounded-full shadow-lg border-0 bg-card"
+          className="pl-12 pr-32 h-14 text-base rounded-full shadow-lg border-0 bg-card"
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
           {loading && (
             <Loader2 className="w-5 h-5 animate-spin text-primary" />
           )}
+          <button
+            type="submit"
+            className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            aria-label="Search"
+          >
+            <Search className="w-5 h-5" />
+          </button>
           <button
             type="button"
             onClick={toggleVoiceSearch}

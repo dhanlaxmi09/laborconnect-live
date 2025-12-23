@@ -20,8 +20,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/hire" element={<HireLabor />} />
-          <Route path="/laborer" element={<LaborerAuth />} />
-          <Route path="/laborer/profile" element={<LaborerProfile />} />
+          <Route path="/labor" element={<LaborerAuth />} />
+          <Route path="/labor/profile" element={<LaborerProfile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -9,7 +9,7 @@ const Index = () => {
           <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
             <Briefcase className="w-5 h-5 text-primary-foreground" />
           </div>
-          <span className="text-xl font-bold">LaborConect</span>
+          <span className="text-xl font-bold">LaborConnect</span>
         </div>
       </header>
 
@@ -41,7 +41,7 @@ const Index = () => {
             </Button>
           </Link>
 
-          <Link to="/laborer" className="block">
+          <Link to="/labor" className="block">
             <Button variant="secondary" size="lg" className="w-full h-20 text-lg gap-3 rounded-2xl shadow-lg hover:shadow-xl transition-all group border-2">
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Briefcase className="w-6 h-6 text-primary" />
