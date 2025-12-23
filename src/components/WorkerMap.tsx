@@ -1,8 +1,59 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
 import { Worker } from '@/lib/demoWorkers';
-import { Phone, X, MapPin } from 'lucide-react';
+import { Phone, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+
+// Fix Leaflet default icon issue
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+import iconRetina from 'leaflet/dist/images/marker-icon-2x.png';
+
+const DefaultIcon = L.icon({
+  iconUrl: icon,
+  iconRetinaUrl: iconRetina,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
+
+// Custom green icon for available workers
+const availableIcon = L.divIcon({
+  className: 'custom-marker',
+  html: `<div style="
+    width: 24px;
+    height: 24px;
+    background-color: #22c55e;
+    border: 3px solid white;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  "></div>`,
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+  popupAnchor: [0, -12]
+});
+
+// Gray icon for busy workers
+const busyIcon = L.divIcon({
+  className: 'custom-marker',
+  html: `<div style="
+    width: 24px;
+    height: 24px;
+    background-color: #9ca3af;
+    border: 3px solid white;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  "></div>`,
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+  popupAnchor: [0, -12]
+});
 
 interface WorkerMapProps {
   workers: Worker[];
@@ -10,128 +61,77 @@ interface WorkerMapProps {
   onSelectWorker: (worker: Worker | null) => void;
 }
 
+// Component to handle map bounds based on workers
+function MapBounds({ workers }: { workers: Worker[] }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (workers.length > 0) {
+      const bounds = L.latLngBounds(workers.map(w => [w.lat, w.lng]));
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+    }
+  }, [workers, map]);
+  
+  return null;
+}
+
 export function WorkerMap({ workers, selectedWorker, onSelectWorker }: WorkerMapProps) {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const mapInstanceRef = useRef<google.maps.Map | null>(null);
-  const markersRef = useRef<google.maps.Marker[]>([]);
-
-  useEffect(() => {
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    
-    if (!apiKey || apiKey === "YOUR_GOOGLE_MAPS_API_KEY") {
-      console.log('Google Maps API key not configured');
-      return;
-    }
-
-    // Load Google Maps script
-    if (!window.google) {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-      script.async = true;
-      script.onload = () => setMapLoaded(true);
-      document.head.appendChild(script);
-    } else {
-      setMapLoaded(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!mapLoaded || !mapRef.current || !window.google) return;
-
-    // Initialize map centered on Solapur
-    const map = new google.maps.Map(mapRef.current, {
-      center: { lat: 17.6599, lng: 75.9064 },
-      zoom: 14,
-      styles: [
-        { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }
-      ],
-      mapTypeControl: false,
-      streetViewControl: false,
-      fullscreenControl: false
-    });
-    
-    mapInstanceRef.current = map;
-
-    return () => {
-      markersRef.current.forEach(marker => marker.setMap(null));
-    };
-  }, [mapLoaded]);
-
-  useEffect(() => {
-    if (!mapInstanceRef.current || !window.google) return;
-
-    // Clear existing markers
-    markersRef.current.forEach(marker => marker.setMap(null));
-    markersRef.current = [];
-
-    // Add markers for workers
-    workers.forEach(worker => {
-      const marker = new google.maps.Marker({
-        position: { lat: worker.lat, lng: worker.lng },
-        map: mapInstanceRef.current,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 12,
-          fillColor: worker.available ? '#22c55e' : '#9ca3af',
-          fillOpacity: 1,
-          strokeColor: '#ffffff',
-          strokeWeight: 3,
-        },
-        title: worker.name
-      });
-
-      marker.addListener('click', () => {
-        onSelectWorker(worker);
-      });
-
-      markersRef.current.push(marker);
-    });
-  }, [workers, mapLoaded, onSelectWorker]);
-
   const handleCall = (phone: string) => {
     window.location.href = `tel:${phone}`;
   };
 
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-  const showPlaceholder = !apiKey || apiKey === "YOUR_GOOGLE_MAPS_API_KEY";
+  const solapurCenter: [number, number] = [17.6599, 75.9064];
 
   return (
     <div className="relative w-full h-full">
-      {showPlaceholder ? (
-        <div className="w-full h-full bg-secondary flex flex-col items-center justify-center p-8">
-          <MapPin className="w-16 h-16 text-muted-foreground mb-4" />
-          <p className="text-lg font-medium text-center mb-2">Map Preview</p>
-          <p className="text-muted-foreground text-center text-sm mb-6">
-            Add your Google Maps API key in Settings to see the live map
-          </p>
-          
-          {/* Demo worker cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
-            {workers.slice(0, 4).map(worker => (
-              <Card 
-                key={worker.id} 
-                className="p-3 cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => onSelectWorker(worker)}
-              >
-                <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${worker.available ? 'bg-available' : 'bg-busy'}`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{worker.name}</p>
-                    <p className="text-xs text-muted-foreground">{worker.skill}</p>
-                  </div>
+      <MapContainer
+        center={solapurCenter}
+        zoom={14}
+        style={{ height: '100%', width: '100%', minHeight: '500px' }}
+        className="rounded-lg z-0"
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        
+        <MapBounds workers={workers} />
+        
+        {workers.map(worker => (
+          <Marker
+            key={worker.id}
+            position={[worker.lat, worker.lng]}
+            icon={worker.available ? availableIcon : busyIcon}
+            eventHandlers={{
+              click: () => onSelectWorker(worker)
+            }}
+          >
+            <Popup>
+              <div className="p-2 min-w-[180px]">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={`w-3 h-3 rounded-full ${worker.available ? 'bg-green-500' : 'bg-gray-400'}`} />
+                  <span className="font-semibold text-gray-900">{worker.name}</span>
                 </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div ref={mapRef} className="w-full h-full" />
-      )}
+                <p className="text-sm text-gray-600 mb-3">{worker.skill}</p>
+                <p className="text-xs text-gray-500 mb-3">
+                  {worker.available ? '🟢 Available Now' : '⚫ Currently Busy'}
+                </p>
+                <button
+                  onClick={() => handleCall(worker.phone)}
+                  className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                >
+                  <Phone className="w-4 h-4" />
+                  Call
+                </button>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
 
       {/* Worker detail card */}
       {selectedWorker && (
-        <Card className="absolute bottom-4 left-4 right-4 p-4 animate-fade-in shadow-lg max-w-sm mx-auto">
+        <Card className="absolute bottom-4 left-4 right-4 p-4 animate-fade-in shadow-lg max-w-sm mx-auto z-[1000]">
           <button 
             onClick={() => onSelectWorker(null)}
             className="absolute top-2 right-2 p-1 rounded-full hover:bg-secondary transition-colors"
@@ -140,7 +140,7 @@ export function WorkerMap({ workers, selectedWorker, onSelectWorker }: WorkerMap
           </button>
           
           <div className="flex items-start gap-3">
-            <div className={`w-4 h-4 rounded-full mt-1 ${selectedWorker.available ? 'bg-available animate-pulse-ring' : 'bg-busy'}`} />
+            <div className={`w-4 h-4 rounded-full mt-1 ${selectedWorker.available ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
             <div className="flex-1">
               <h3 className="font-semibold text-lg">{selectedWorker.name}</h3>
               <p className="text-muted-foreground">{selectedWorker.skill}</p>
@@ -152,7 +152,7 @@ export function WorkerMap({ workers, selectedWorker, onSelectWorker }: WorkerMap
           
           <Button 
             onClick={() => handleCall(selectedWorker.phone)}
-            className="w-full mt-4 gap-2 bg-available hover:bg-available/90 text-white text-lg font-semibold py-6 shadow-lg"
+            className="w-full mt-4 gap-2 bg-green-500 hover:bg-green-600 text-white text-lg font-semibold py-6 shadow-lg"
             size="lg"
           >
             <Phone className="w-6 h-6" />
