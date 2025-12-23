@@ -1,44 +1,22 @@
-import { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
-import 'leaflet-defaulticon-compatibility';
 import { Worker } from '@/lib/demoWorkers';
 import { Phone, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
-// Custom green icon for available workers
-const createAvailableIcon = () => L.divIcon({
-  className: 'custom-marker-available',
-  html: `<div style="
-    width: 24px;
-    height: 24px;
-    background-color: #22c55e;
-    border: 3px solid white;
-    border-radius: 50%;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  "></div>`,
-  iconSize: [24, 24],
-  iconAnchor: [12, 12],
-  popupAnchor: [0, -12]
-});
+// Fix Leaflet default marker icon issue
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
-// Gray icon for busy workers
-const createBusyIcon = () => L.divIcon({
-  className: 'custom-marker-busy',
-  html: `<div style="
-    width: 24px;
-    height: 24px;
-    background-color: #9ca3af;
-    border: 3px solid white;
-    border-radius: 50%;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  "></div>`,
-  iconSize: [24, 24],
-  iconAnchor: [12, 12],
-  popupAnchor: [0, -12]
+// @ts-ignore
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
 });
 
 interface WorkerMapProps {
@@ -47,74 +25,108 @@ interface WorkerMapProps {
   onSelectWorker: (worker: Worker | null) => void;
 }
 
-// Component to handle map bounds based on workers
-function MapBoundsUpdater({ workers }: { workers: Worker[] }) {
-  const map = useMap();
-  
-  useEffect(() => {
-    if (workers.length > 0) {
-      const bounds = L.latLngBounds(workers.map(w => [w.lat, w.lng] as L.LatLngTuple));
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
-    }
-  }, [workers, map]);
-  
-  return null;
-}
-
 export function WorkerMap({ workers, selectedWorker, onSelectWorker }: WorkerMapProps) {
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markersRef = useRef<L.Marker[]>([]);
+
   const handleCall = (phone: string) => {
     window.location.href = `tel:${phone}`;
   };
 
-  const solapurCenter: L.LatLngExpression = [17.6599, 75.9064];
+  // Initialize map
+  useEffect(() => {
+    if (!mapContainerRef.current || mapRef.current) return;
+
+    const map = L.map(mapContainerRef.current).setView([17.6599, 75.9064], 14);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    mapRef.current = map;
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, []);
+
+  // Update markers when workers change
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    // Clear existing markers
+    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current = [];
+
+    // Add new markers
+    workers.forEach(worker => {
+      const markerColor = worker.available ? '#22c55e' : '#9ca3af';
+      
+      const customIcon = L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="
+          width: 28px;
+          height: 28px;
+          background-color: ${markerColor};
+          border: 3px solid white;
+          border-radius: 50%;
+          box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        "></div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+        popupAnchor: [0, -14]
+      });
+
+      const marker = L.marker([worker.lat, worker.lng], { icon: customIcon })
+        .addTo(mapRef.current!);
+
+      const popupContent = `
+        <div style="padding: 8px; min-width: 180px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${markerColor};"></div>
+            <span style="font-weight: 600; color: #111;">${worker.name}</span>
+          </div>
+          <p style="font-size: 14px; color: #666; margin-bottom: 8px;">${worker.skill}</p>
+          <p style="font-size: 12px; color: #888; margin-bottom: 12px;">
+            ${worker.available ? '🟢 Available Now' : '⚫ Currently Busy'}
+          </p>
+          <a href="tel:${worker.phone}" 
+             style="display: flex; align-items: center; justify-content: center; gap: 8px; 
+                    background-color: #22c55e; color: white; font-weight: 500; 
+                    padding: 10px 16px; border-radius: 8px; text-decoration: none;
+                    transition: background-color 0.2s;">
+            📞 Call
+          </a>
+        </div>
+      `;
+
+      marker.bindPopup(popupContent);
+      
+      marker.on('click', () => {
+        onSelectWorker(worker);
+      });
+
+      markersRef.current.push(marker);
+    });
+
+    // Fit bounds if there are workers
+    if (workers.length > 0) {
+      const bounds = L.latLngBounds(workers.map(w => [w.lat, w.lng] as L.LatLngTuple));
+      mapRef.current.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+    }
+  }, [workers, onSelectWorker]);
 
   return (
     <div className="relative w-full h-full">
-      <MapContainer
-        center={solapurCenter}
-        zoom={14}
-        scrollWheelZoom={true}
-        style={{ height: '100%', width: '100%', minHeight: '500px' }}
-        className="rounded-lg z-0"
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        
-        <MapBoundsUpdater workers={workers} />
-        
-        {workers.map((worker) => (
-          <Marker
-            key={worker.id}
-            position={[worker.lat, worker.lng]}
-            icon={worker.available ? createAvailableIcon() : createBusyIcon()}
-            eventHandlers={{
-              click: () => onSelectWorker(worker)
-            }}
-          >
-            <Popup>
-              <div className="p-2 min-w-[180px]">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className={`w-3 h-3 rounded-full ${worker.available ? 'bg-green-500' : 'bg-gray-400'}`} />
-                  <span className="font-semibold text-gray-900">{worker.name}</span>
-                </div>
-                <p className="text-sm text-gray-600 mb-3">{worker.skill}</p>
-                <p className="text-xs text-gray-500 mb-3">
-                  {worker.available ? '🟢 Available Now' : '⚫ Currently Busy'}
-                </p>
-                <button
-                  onClick={() => handleCall(worker.phone)}
-                  className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-                >
-                  <Phone className="w-4 h-4" />
-                  Call
-                </button>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
+      <div 
+        ref={mapContainerRef} 
+        className="w-full h-full rounded-lg z-0" 
+        style={{ minHeight: '500px' }}
+      />
 
       {/* Worker detail card */}
       {selectedWorker && (
