@@ -152,10 +152,10 @@ export function WorkerMap({ workers, selectedWorker, onSelectWorker }: WorkerMap
           
           <Button 
             onClick={() => handleCall(selectedWorker.phone)}
-            className="w-full mt-4 gap-2"
+            className="w-full mt-4 gap-2 bg-available hover:bg-available/90 text-white text-lg font-semibold py-6 shadow-lg"
             size="lg"
           >
-            <Phone className="w-4 h-4" />
+            <Phone className="w-6 h-6" />
             Call {selectedWorker.name.split(' ')[0]}
           </Button>
         </Card>

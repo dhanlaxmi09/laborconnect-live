@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Phone, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,16 +7,40 @@ import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { auth } from '@/lib/firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, browserLocalPersistence, setPersistence, onAuthStateChanged } from 'firebase/auth';
 
 const LaborerAuth = () => {
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Check for existing session on mount
+  useEffect(() => {
+    const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
+    if (!apiKey || apiKey === "YOUR_FIREBASE_API_KEY") {
+      setCheckingAuth(false);
+      return;
+    }
+
+    // Set persistence to local
+    setPersistence(auth, browserLocalPersistence).catch(console.error);
+
+    // Listen for auth state changes
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is already logged in, redirect to profile
+        navigate('/laborer/profile');
+      }
+      setCheckingAuth(false);
+    });
+
+    return () => unsubscribe();
+  }, [navigate]);
 
   const setupRecaptcha = () => {
     if (!(window as any).recaptchaVerifier) {
@@ -96,6 +120,15 @@ const LaborerAuth = () => {
       setLoading(false);
     }
   };
+
+  // Show loading while checking auth state
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 p-6">
