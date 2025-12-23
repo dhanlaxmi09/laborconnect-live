@@ -1,12 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { demoWorkers, Worker } from '@/lib/demoWorkers';
+import { useToast } from '@/hooks/use-toast';
 
 export function useWorkers() {
-  const [workers, setWorkers] = useState<Worker[]>(demoWorkers);
+  const [workers] = useState<Worker[]>(demoWorkers);
   const [filteredWorkers, setFilteredWorkers] = useState<Worker[]>(demoWorkers);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [noResults, setNoResults] = useState(false);
+  const { toast } = useToast();
 
-  const searchWorkers = async (query: string) => {
+  const searchWorkers = useCallback(async (query: string) => {
+    setSearchQuery(query);
+    setNoResults(false);
+    
+    // Show all workers if search is empty
     if (!query.trim()) {
       setFilteredWorkers(workers);
       return;
@@ -14,8 +22,6 @@ export function useWorkers() {
 
     setLoading(true);
     
-    // PLACEHOLDER: This would use Gemini 1.5 Flash API
-    // For demo, we'll do simple keyword matching
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     
     if (apiKey && apiKey !== "YOUR_GEMINI_API_KEY") {
@@ -28,7 +34,27 @@ export function useWorkers() {
             body: JSON.stringify({
               contents: [{
                 parts: [{
-                  text: `Given this search query: "${query}", return only the skill types that match from this list: Plumber, Electrician, Carpenter, Painter, Mason, AC Repair, Welder. Return just the matching skills separated by commas, nothing else. If no match, return "all".`
+                  text: `You are a skill extractor for a labor hiring app in India. 
+                  
+Given this user search query: "${query}"
+
+Extract the matching skill types from this list ONLY:
+- Plumber (water pipes, taps, bathroom, toilet, drainage)
+- Electrician (wiring, lights, fans, switches, power)
+- Carpenter (wood, furniture, doors, cabinets)
+- Painter (walls, house painting, whitewash)
+- Mason (bricks, cement, construction, tiles)
+- AC Repair (air conditioner, cooling, AC service)
+- Welder (metal, iron, gates, grills)
+
+Rules:
+1. Return ONLY the exact skill names that match, separated by commas
+2. If user says "I need a plumber", return "Plumber"
+3. If user says "fix my AC", return "AC Repair"
+4. If user mentions multiple skills, return all matching ones
+5. If no skills match, return "NONE"
+
+Return only the skill names, nothing else.`
                 }]
               }]
             })
@@ -36,20 +62,33 @@ export function useWorkers() {
         );
         
         const data = await response.json();
-        const skills = data.candidates?.[0]?.content?.parts?.[0]?.text?.toLowerCase() || '';
+        const skillsText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
         
-        if (skills.includes('all')) {
-          setFilteredWorkers(workers);
+        console.log('Gemini extracted skills:', skillsText);
+        
+        if (skillsText.toUpperCase() === 'NONE') {
+          setFilteredWorkers([]);
+          setNoResults(true);
         } else {
-          const matchedSkills = skills.split(',').map((s: string) => s.trim().toLowerCase());
+          const matchedSkills = skillsText.split(',').map((s: string) => s.trim().toLowerCase());
           const filtered = workers.filter(w => 
-            matchedSkills.some((skill: string) => w.skill.toLowerCase().includes(skill))
+            matchedSkills.some((skill: string) => 
+              w.skill.toLowerCase().includes(skill) || skill.includes(w.skill.toLowerCase())
+            )
           );
-          setFilteredWorkers(filtered.length > 0 ? filtered : workers);
+          
+          if (filtered.length === 0) {
+            setNoResults(true);
+          }
+          setFilteredWorkers(filtered);
         }
       } catch (error) {
         console.error('Gemini API error:', error);
-        // Fallback to simple search
+        toast({
+          title: "Search Error",
+          description: "AI search failed. Using basic search.",
+          variant: "destructive",
+        });
         simpleSearch(query);
       }
     } else {
@@ -58,7 +97,7 @@ export function useWorkers() {
     }
     
     setLoading(false);
-  };
+  }, [workers, toast]);
 
   const simpleSearch = (query: string) => {
     const lowerQuery = query.toLowerCase();
@@ -66,8 +105,26 @@ export function useWorkers() {
       w.skill.toLowerCase().includes(lowerQuery) ||
       w.name.toLowerCase().includes(lowerQuery)
     );
-    setFilteredWorkers(filtered.length > 0 ? filtered : workers);
+    
+    if (filtered.length === 0) {
+      setNoResults(true);
+    }
+    setFilteredWorkers(filtered);
   };
 
-  return { workers: filteredWorkers, allWorkers: workers, loading, searchWorkers };
+  const clearSearch = useCallback(() => {
+    setSearchQuery('');
+    setFilteredWorkers(workers);
+    setNoResults(false);
+  }, [workers]);
+
+  return { 
+    workers: filteredWorkers, 
+    allWorkers: workers, 
+    loading, 
+    searchWorkers,
+    clearSearch,
+    searchQuery,
+    noResults
+  };
 }

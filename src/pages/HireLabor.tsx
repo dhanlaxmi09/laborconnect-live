@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Phone, X, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { WorkerMap } from '@/components/WorkerMap';
 import { SearchBar } from '@/components/SearchBar';
 import { useWorkers } from '@/hooks/useWorkers';
 import { Worker } from '@/lib/demoWorkers';
 
 const HireLabor = () => {
-  const { workers, loading, searchWorkers } = useWorkers();
+  const { workers, loading, searchWorkers, clearSearch, searchQuery, noResults } = useWorkers();
   const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
 
   return (
@@ -26,7 +27,7 @@ const HireLabor = () => {
         
         <SearchBar onSearch={searchWorkers} loading={loading} />
         
-        {/* Legend */}
+        {/* Legend & Search Info */}
         <div className="flex items-center gap-4 mt-3 px-2">
           <div className="flex items-center gap-2 text-sm">
             <div className="w-3 h-3 rounded-full bg-available" />
@@ -36,10 +37,31 @@ const HireLabor = () => {
             <div className="w-3 h-3 rounded-full bg-busy" />
             <span className="text-muted-foreground">Busy</span>
           </div>
-          <div className="ml-auto text-sm text-muted-foreground">
-            {workers.length} workers found
+          <div className="ml-auto flex items-center gap-2">
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearSearch}
+                className="h-7 px-2 text-xs"
+              >
+                <X className="w-3 h-3 mr-1" />
+                Clear
+              </Button>
+            )}
+            <span className="text-sm text-muted-foreground">
+              {workers.length} workers found
+            </span>
           </div>
         </div>
+
+        {/* No Results Message */}
+        {noResults && (
+          <div className="mt-3 flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm">
+            <AlertCircle className="w-4 h-4 text-destructive" />
+            <span className="text-destructive">No workers found for this skill in Solapur.</span>
+          </div>
+        )}
       </header>
 
       {/* Map */}
@@ -50,6 +72,41 @@ const HireLabor = () => {
           onSelectWorker={setSelectedWorker}
         />
       </div>
+
+      {/* Results List (shows when search is active) */}
+      {searchQuery && workers.length > 0 && (
+        <div className="absolute bottom-0 left-0 right-0 z-10 max-h-48 overflow-y-auto bg-background/95 backdrop-blur-sm border-t">
+          <div className="p-3">
+            <h3 className="text-sm font-semibold mb-2">Matching Workers</h3>
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {workers.map((worker) => (
+                <Card 
+                  key={worker.id}
+                  onClick={() => setSelectedWorker(worker)}
+                  className={`flex-shrink-0 p-3 cursor-pointer transition-all hover:shadow-md ${
+                    selectedWorker?.id === worker.id ? 'ring-2 ring-primary' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-2 h-2 rounded-full ${worker.available ? 'bg-available' : 'bg-busy'}`} />
+                    <div>
+                      <p className="font-medium text-sm">{worker.name}</p>
+                      <p className="text-xs text-muted-foreground">{worker.skill}</p>
+                    </div>
+                    <a 
+                      href={`tel:${worker.phone}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="ml-2 p-2 rounded-full bg-available text-white hover:bg-available/90"
+                    >
+                      <Phone className="w-3 h-3" />
+                    </a>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
