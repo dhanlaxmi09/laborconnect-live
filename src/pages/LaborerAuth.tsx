@@ -34,7 +34,7 @@ const LaborerAuth = () => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         // User is already logged in, redirect to profile
-        navigate('/laborer/profile');
+        navigate('/labor/profile');
       }
       setCheckingAuth(false);
     });
@@ -61,7 +61,7 @@ const LaborerAuth = () => {
         title: "Demo Mode",
         description: "Firebase not configured. Proceeding to profile setup.",
       });
-      navigate('/laborer/profile', { state: { phone, isDemo: true } });
+      navigate('/labor/profile', { state: { phone, isDemo: true } });
       return;
     }
 
@@ -108,7 +108,7 @@ const LaborerAuth = () => {
         title: "Verified!",
         description: "Phone number verified successfully",
       });
-      navigate('/laborer/profile');
+      navigate('/labor/profile');
     } catch (error: any) {
       console.error('Verification error:', error);
       toast({
@@ -139,7 +139,7 @@ const LaborerAuth = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
         </Link>
-        <h1 className="text-xl font-bold">Laborer Login</h1>
+        <h1 className="text-xl font-bold">Labor Login</h1>
       </div>
 
       <div className="max-w-sm mx-auto">

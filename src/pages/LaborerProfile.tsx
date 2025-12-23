@@ -120,7 +120,7 @@ const LaborerProfile = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 p-6">
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
-        <Link to="/laborer">
+        <Link to="/labor">
           <Button variant="secondary" size="icon" className="rounded-full">
             <ArrowLeft className="w-5 h-5" />
           </Button>
