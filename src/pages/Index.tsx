@@ -57,7 +57,7 @@ const Index = () => {
       </main>
 
       {/* Footer */}
-      <footer className="p-6 text-center text-sm text-primary bg-[sidebar-accent-foreground] bg-primary-foreground">Connecting hands with opportunities</footer>
+      <footer className="p-6 text-center text-sm text-primary bg-[sidebar-accent-foreground] bg-neutral-100">Connecting hands with opportunities</footer>
     </div>;
 };
 export default Index;
