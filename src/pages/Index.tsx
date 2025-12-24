@@ -75,9 +75,9 @@ const Index = () => {
       </main>
 
       {/* Footer */}
-      <footer className="p-6 text-center text-sm text-muted-foreground">
-        Connecting workers with opportunities in Solapur
-      </footer>
+      <footer className="p-6 text-center text-sm text-muted-foreground">Connecting workers with opportunities
+
+    </footer>
     </div>;
 };
 export default Index;
