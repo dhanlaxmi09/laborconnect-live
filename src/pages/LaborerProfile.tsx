@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Loader2, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-
+import { auth, db } from '@/lib/firebase';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { onAuthStateChanged, User } from 'firebase/auth';
 const skills = [
   'Plumber',
   'Electrician',
@@ -24,21 +26,62 @@ const skills = [
 
 const LaborerProfile = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { toast } = useToast();
+  const [user, setUser] = useState<User | null>(null);
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [skill, setSkill] = useState('');
   const [available, setAvailable] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [loadingProfile, setLoadingProfile] = useState(true);
   const [saved, setSaved] = useState(false);
   const [gpsStatus, setGpsStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const isDemo = location.state?.isDemo;
 
+  // Check authentication and load existing profile
   useEffect(() => {
-    // Request GPS location on mount
-    getLocation();
-  }, []);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        setPhone(currentUser.phoneNumber || '');
+        
+        // Load existing profile if it exists
+        try {
+          const profileDoc = await getDoc(doc(db, 'profiles', currentUser.uid));
+          if (profileDoc.exists()) {
+            const data = profileDoc.data();
+            setName(data.name || '');
+            setSkill(data.skill || '');
+            setAvailable(data.available ?? true);
+            if (data.lat && data.lng) {
+              setCoords({ lat: data.lat, lng: data.lng });
+              setGpsStatus('success');
+            }
+          }
+        } catch (error) {
+          console.error('Error loading profile:', error);
+        }
+        setLoadingProfile(false);
+      } else if (!isDemo) {
+        // Redirect to auth if not logged in and not in demo mode
+        navigate('/labor');
+      } else {
+        setLoadingProfile(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [navigate, isDemo]);
+
+  useEffect(() => {
+    // Request GPS location on mount if not already set
+    if (gpsStatus === 'idle') {
+      getLocation();
+    }
+  }, [gpsStatus]);
 
   const getLocation = () => {
     setGpsStatus('loading');
@@ -90,13 +133,48 @@ const LaborerProfile = () => {
       return;
     }
 
+    if (!coords) {
+      toast({
+        title: "Location Required",
+        description: "Please enable location access to be visible on the map",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
-    // PLACEHOLDER: Save to Firebase Firestore
-    // In production, this would save to the workers collection
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (isDemo) {
+        // Demo mode - just simulate save
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } else if (user) {
+        // Save to Firestore
+        const profileData = {
+          name,
+          phone: phone || user.phoneNumber || '',
+          skill,
+          available,
+          lat: coords.lat,
+          lng: coords.lng,
+          updatedAt: serverTimestamp(),
+        };
+
+        // Check if profile exists to preserve createdAt
+        const profileRef = doc(db, 'profiles', user.uid);
+        const existingProfile = await getDoc(profileRef);
+        
+        if (!existingProfile.exists()) {
+          // New profile - add createdAt
+          await setDoc(profileRef, {
+            ...profileData,
+            createdAt: serverTimestamp(),
+          });
+        } else {
+          // Update existing profile
+          await setDoc(profileRef, profileData, { merge: true });
+        }
+      }
       
       setSaved(true);
       toast({
@@ -106,6 +184,7 @@ const LaborerProfile = () => {
           : "Your profile is saved but you're marked as busy",
       });
     } catch (error) {
+      console.error('Error saving profile:', error);
       toast({
         title: "Error",
         description: "Failed to save profile. Please try again.",
@@ -115,6 +194,14 @@ const LaborerProfile = () => {
       setLoading(false);
     }
   };
+
+  if (loadingProfile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 p-6">
@@ -137,6 +224,14 @@ const LaborerProfile = () => {
 
         <Card className="p-6">
           <form onSubmit={handleSave} className="space-y-6">
+            {/* Phone (read-only, from auth) */}
+            {phone && (
+              <div className="space-y-2">
+                <Label>Phone Number</Label>
+                <Input value={phone} disabled className="bg-muted" />
+              </div>
+            )}
+
             {/* Name */}
             <div className="space-y-2">
               <Label htmlFor="name">Your Name</Label>
