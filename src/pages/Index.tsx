@@ -20,10 +20,7 @@ const Index = () => {
             Find Workers
             <span className="text-primary"> Nearby</span>
           </h1>
-          <p className="text-lg text-muted-foreground">
-            Connect with skilled laborers in Solapur instantly. 
-            Plumbers, electricians, carpenters and more.
-          </p>
+          <p className="text-lg text-muted-foreground">Connect with skilled laborers  instantly. Plumbers, electricians, carpenters and more.</p>
         </div>
 
         {/* Action Buttons */}
@@ -56,28 +53,11 @@ const Index = () => {
         </div>
 
         {/* Stats */}
-        <div className="mt-12 flex items-center gap-8 text-center">
-          <div>
-            <div className="text-2xl font-bold text-primary">100+</div>
-            <div className="text-sm text-muted-foreground">Workers</div>
-          </div>
-          <div className="w-px h-8 bg-border" />
-          <div>
-            <div className="text-2xl font-bold text-primary">10+</div>
-            <div className="text-sm text-muted-foreground">Skills</div>
-          </div>
-          <div className="w-px h-8 bg-border" />
-          <div>
-            <div className="text-2xl font-bold text-primary">24/7</div>
-            <div className="text-sm text-muted-foreground">Available</div>
-          </div>
-        </div>
+        
       </main>
 
       {/* Footer */}
-      <footer className="p-6 text-center text-sm text-muted-foreground">Connecting workers with opportunities
-
-    </footer>
+      <footer className="p-6 text-center text-sm text-primary bg-[sidebar-accent-foreground] bg-primary-foreground">Connecting hands with opportunities</footer>
     </div>;
 };
 export default Index;
