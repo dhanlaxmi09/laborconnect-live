@@ -96,7 +96,7 @@ export function SearchBar({ onSearch, loading }: SearchBarProps) {
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
         <Input
           type="text"
-          placeholder='Try "I need a plumber" or "electrician"'
+          placeholder='Try "electrician"'
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="pl-12 pr-36 h-14 text-base rounded-full shadow-lg border-0 bg-card"

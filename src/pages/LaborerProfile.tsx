@@ -336,6 +336,11 @@ const LaborerProfile = () => {
                 ? 'Employers can now find you on the map' 
                 : 'Update your status when you\'re ready for work'}
             </p>
+            <Link to="/">
+              <Button variant="outline" className="mt-4">
+                Go to Main Page
+              </Button>
+            </Link>
           </div>
         )}
       </div>
