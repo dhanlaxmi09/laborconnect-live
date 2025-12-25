@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Phone, X, AlertCircle, RefreshCw, Database } from 'lucide-react';
+import { Phone, X, AlertCircle, RefreshCw, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { WorkerMap } from '@/components/WorkerMap';
 import { SearchBar } from '@/components/SearchBar';
 import { useWorkers } from '@/hooks/useWorkers';
 import { Worker } from '@/lib/demoWorkers';
-import { Skeleton } from '@/components/ui/skeleton';
+import { AppHeader } from '@/components/AppHeader';
 
 const HireLabor = () => {
   const { workers, loading, initialLoading, searchWorkers, clearSearch, searchQuery, noResults, usingDemoData, refreshWorkers } = useWorkers();
@@ -27,67 +27,61 @@ const HireLabor = () => {
   return (
     <div className="h-screen flex flex-col bg-background">
       {/* Header */}
-      <header className="absolute top-0 left-0 right-0 z-10 p-4">
-        <div className="flex items-center gap-4 mb-4">
-          <Link to="/">
-            <Button variant="secondary" size="icon" className="rounded-full shadow-md">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          </Link>
-          <h1 className="text-xl font-bold">Find Workers</h1>
-        </div>
+      <header className="absolute top-0 left-0 right-0 z-10 bg-background/80 backdrop-blur-sm">
+        <AppHeader title="Find Workers" showBack backTo="/" />
+        <div className="px-4 pb-4">
+          <SearchBar onSearch={searchWorkers} loading={loading} />
         
-        <SearchBar onSearch={searchWorkers} loading={loading} />
-        
-        {/* Legend & Search Info */}
-        <div className="flex items-center gap-4 mt-3 px-2">
-          <div className="flex items-center gap-2 text-sm">
-            <div className="w-3 h-3 rounded-full bg-available" />
-            <span className="text-muted-foreground">Available</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <div className="w-3 h-3 rounded-full bg-busy" />
-            <span className="text-muted-foreground">Busy</span>
-          </div>
-          <div className="ml-auto flex items-center gap-2">
-            {usingDemoData && (
-              <span className="text-xs text-amber-600 bg-amber-100 px-2 py-1 rounded">
-                Demo Data
-              </span>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={refreshWorkers}
-              disabled={loading}
-              className="h-7 px-2"
-            >
-              <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
-            </Button>
-            {searchQuery && (
+          {/* Legend & Search Info */}
+          <div className="flex items-center gap-4 mt-3">
+            <div className="flex items-center gap-2 text-sm">
+              <div className="w-3 h-3 rounded-full bg-available" />
+              <span className="text-muted-foreground">Available</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <div className="w-3 h-3 rounded-full bg-busy" />
+              <span className="text-muted-foreground">Busy</span>
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              {usingDemoData && (
+                <span className="text-xs text-amber-600 bg-amber-100 px-2 py-1 rounded">
+                  Demo Data
+                </span>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={clearSearch}
-                className="h-7 px-2 text-xs"
+                onClick={refreshWorkers}
+                disabled={loading}
+                className="h-7 px-2"
               >
-                <X className="w-3 h-3 mr-1" />
-                Clear
+                <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
               </Button>
-            )}
-            <span className="text-sm text-muted-foreground">
-              {workers.length} workers found
-            </span>
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearSearch}
+                  className="h-7 px-2 text-xs"
+                >
+                  <X className="w-3 h-3 mr-1" />
+                  Clear
+                </Button>
+              )}
+              <span className="text-sm text-muted-foreground">
+                {workers.length} workers found
+              </span>
+            </div>
           </div>
-        </div>
 
-        {/* No Results Message */}
-        {noResults && (
-          <div className="mt-3 flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm">
-            <AlertCircle className="w-4 h-4 text-destructive" />
-            <span className="text-destructive">No workers found for this skill in Solapur.</span>
-          </div>
-        )}
+          {/* No Results Message */}
+          {noResults && (
+            <div className="mt-3 flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm">
+              <AlertCircle className="w-4 h-4 text-destructive" />
+              <span className="text-destructive">No workers found for this skill in Solapur.</span>
+            </div>
+          )}
+        </div>
       </header>
 
       {/* Map */}

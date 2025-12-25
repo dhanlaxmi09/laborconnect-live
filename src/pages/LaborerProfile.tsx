@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Loader2, CheckCircle } from 'lucide-react';
+import { MapPin, Loader2, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { auth, db } from '@/lib/firebase';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
+import { AppHeader } from '@/components/AppHeader';
 const skills = [
   'Plumber',
   'Electrician',
@@ -204,18 +205,11 @@ const LaborerProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <Link to="/labor">
-          <Button variant="secondary" size="icon" className="rounded-full">
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-        </Link>
-        <h1 className="text-xl font-bold">Your Profile</h1>
-      </div>
+      <AppHeader title="Your Profile" showBack backTo="/labor" />
 
-      <div className="max-w-sm mx-auto">
+      <div className="px-6 pb-6 max-w-sm mx-auto">
         {isDemo && (
           <div className="bg-accent/10 border border-accent/20 rounded-lg p-3 mb-6 text-sm text-center">
             🎭 Demo Mode - Firebase not configured

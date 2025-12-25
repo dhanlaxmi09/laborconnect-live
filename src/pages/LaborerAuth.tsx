@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Phone, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Phone, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { auth } from '@/lib/firebase';
 import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, browserLocalPersistence, setPersistence, onAuthStateChanged } from 'firebase/auth';
+import { AppHeader } from '@/components/AppHeader';
 
 const LaborerAuth = () => {
   const [phone, setPhone] = useState('');
@@ -131,16 +132,9 @@ const LaborerAuth = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <Link to="/">
-          <Button variant="secondary" size="icon" className="rounded-full">
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-        </Link>
-        <h1 className="text-xl font-bold">Labor Login</h1>
-      </div>
+      <AppHeader title="Labor Login" showBack backTo="/" />
 
       <div className="max-w-sm mx-auto">
         {/* Icon */}
