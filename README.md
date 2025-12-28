@@ -1,73 +1,42 @@
-# Welcome to your Lovable project
+Problem Statement
 
-## Project info
+The current market for informal labor is inefficient and disconnected. Currently, finding a skilled professional—like a plumber, electrician, or carpenter—relies almost entirely on word of mouth.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+This "word of mouth" system is flawed:
 
-## How can I edit this code?
+For Workers: Many talented professionals remain unemployed simply because they are not part of a specific social circle. They lack a platform to showcase their availability to the wider public.
 
-There are several ways of editing your application.
+For Employers: Hiring becomes a game of luck. Relying on personal referrals is slow, and there is no way to verify if a worker is actually available or nearby when an emergency strikes.
 
-**Use Lovable**
+💡 The Solution
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+LabourConnect digitizes this process, moving beyond the limitations of personal networks to create a transparent, instant, and reliable marketplace for everyone.
 
-Changes made via Lovable will be committed automatically to this repo.
+LabourConnect provides a live, interactive map where workers can "go active" to show they are ready for hire. Employers can instantly see who is nearby, filter by specific skills, and contact them immediately. This replaces slow "word of mouth" searches with a 2-second map scan.
 
-**Use your preferred IDE**
+✨ Key Features
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+1.Interactive Map: Built with Leaflet.js, providing a lightweight and fast map experience to see workers' locations in real-time.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+2.Gemini Voice Assistant: Powered by Gemini 1.5 Flash, the app features a voice interface. Users can interact with the platform using natural language, making it accessible for users who prefer speaking over typing.
 
-Follow these steps:
+3.Live Availability Status: A simple system where workers can mark themselves as available or busy, updating the map instantly.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+4.One-Touch Communication: A direct "Call" feature that bridges the gap between seeing a worker on the map and hiring them for a job.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+5.Firebase Backend: All worker data and locations are synced in real-time using Firestore.
 
-# Step 3: Install the necessary dependencies.
-npm i
+6.Easy and Understandle User interference.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+🛠️ Tech Stack
+Frontend: React.js, Vite, TypeScript
 
-**Edit a file directly in GitHub**
+Styling: Tailwind CSS & Shadcn UI
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Mapping: Leaflet.js (Open-source interactive maps)
 
-**Use GitHub Codespaces**
+AI Engine: Gemini 1.5 Flash (Low-latency voice assistant)
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Backend/Database: Google Firebase (Firestore & Authentication)
 
-## What technologies are used for this project?
 
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
