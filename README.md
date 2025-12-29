@@ -1,9 +1,9 @@
-⭐Title -- LaborConnect - Connecting Hands to opportunities.
+⭐**Title** -- LaborConnect - Connecting Hands to opportunities.
 
-🔗Link - https://laborconnect-live.lovable.app/
+🔗**Link** - https://laborconnect-live.lovable.app/
 
 
-🤔Problem Statement
+🤔**Problem Statement**
 
 The current market for informal labor is inefficient and disconnected. Currently, finding a skilled professional—like a plumber, electrician, or carpenter—relies almost entirely on word of mouth.
 
@@ -13,7 +13,7 @@ For Workers: Many talented professionals remain unemployed simply because they a
 
 For Employers: Hiring becomes a game of luck. Relying on personal referrals is slow, and there is no way to verify if a worker is actually available or nearby when an emergency strikes.
 
-💡 The Solution
+💡 **The Solution**
 
 LabourConnect digitizes this process, moving beyond the limitations of personal networks to create a transparent, instant, and reliable marketplace for everyone.
 
@@ -36,7 +36,7 @@ Speed: You find help in seconds, not days.
 
 Low Data: Because we use Leaflet.js, the app is very light and works well even on slow internet.
 
-✨ Key Features
+✨ **Key Features**
 
 1.Interactive Map: Built with Leaflet.js, providing a lightweight and fast map experience to see workers' locations in real-time.
 
@@ -50,7 +50,7 @@ Low Data: Because we use Leaflet.js, the app is very light and works well even o
 
 6.Easy and Understandle User interference.
 
-🛠️ Tech Stack
+🛠️ **Tech Stack**
 Frontend: React.js, Vite, TypeScript
 
 Styling: Tailwind CSS & Shadcn UI
@@ -61,16 +61,16 @@ AI Engine: Gemini 1.5 Flash (Low-latency voice assistant)
 
 Backend/Database: Google Firebase (Firestore & Authentication)
 
-🚀 Installation & Setup
+🚀 **Installation & Setup**
 You can experience LabourConnect in three ways:
 
-Option A: Live Environment (No Setup Required)
+**Option A: Live Environment (No Setup Required)**
 The easiest way to test the app is via our live deployment: 👉 View Live Demo -- https://laborconnect-live.lovable.app/
 
-Option B: Local Development
+**Option B: Local Development**
 If you wish to run the project on your local machine:
 
-Clone the repo: git clone https://github.com/YOUR_USERNAME/labour-connect.git
+Clone the repo: git clone https://github.com/dhanlaxmi09/laborconnect-live
 
 Install dependencies: npm install
 
@@ -78,14 +78,14 @@ Configure Environment: Create a .env file with your API keys.
 
 Launch: npm run dev
 
-Option C: GitHub Codespaces
+**Option C: GitHub Codespaces**
 Click the Code button at the top of this repository.
 
 Select Codespaces -> Create codespace on main.
 
 Once the environment loads, run npm install and npm run dev.
 
-🔮 Future Roadmap
+🔮 **Future Roadmap**
 
 Move to Google Maps: Switch from Leaflet to Google Maps to get better search, Street View, and live traffic details.
 
@@ -97,4 +97,14 @@ Multi-language Voice: Expanding the Gemini assistant to understand local dialect
 
 Easy Payments: Add a way to pay workers directly through the app once the job is done.
 
+## 👥 Contributors
+- **Dhanlaxmi Salgare** - 
+- Built for Hack-AI-thon 2025-26.
+
+  ## ❤️ Acknowledgments
+- Special thanks to the **Google Gemini Team** for the AI capabilities.
+- Powered by **Firebase** for real-time infrastructure.
+
+---
+**LaborConnect: Connecting Hands to Opportunities** 🇮🇳
 
