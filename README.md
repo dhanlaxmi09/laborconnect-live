@@ -1,14 +1,9 @@
-Title 
+⭐Title -- LaborConnect - Connecting Hands to opportunities.
 
-LaborConnect - Connecting Hands to opportunities.
-
-Link
+🔗Link - https://laborconnect-live.lovable.app/
 
 
-
-
-
-Problem Statement
+🤔Problem Statement
 
 The current market for informal labor is inefficient and disconnected. Currently, finding a skilled professional—like a plumber, electrician, or carpenter—relies almost entirely on word of mouth.
 
@@ -70,7 +65,7 @@ Backend/Database: Google Firebase (Firestore & Authentication)
 You can experience LabourConnect in three ways:
 
 Option A: Live Environment (No Setup Required)
-The easiest way to test the app is via our live deployment: 👉 View Live Demo
+The easiest way to test the app is via our live deployment: 👉 View Live Demo -- https://laborconnect-live.lovable.app/
 
 Option B: Local Development
 If you wish to run the project on your local machine:
@@ -79,7 +74,7 @@ Clone the repo: git clone https://github.com/YOUR_USERNAME/labour-connect.git
 
 Install dependencies: npm install
 
-Configure Environment: Create a .env file with your API keys (see below).
+Configure Environment: Create a .env file with your API keys.
 
 Launch: npm run dev
 
