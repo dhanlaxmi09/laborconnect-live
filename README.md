@@ -98,7 +98,8 @@ Multi-language Voice: Expanding the Gemini assistant to understand local dialect
 Easy Payments: Add a way to pay workers directly through the app once the job is done.
 
 ## 👥 Contributors
-- **Dhanlaxmi Salgare** - 
+- **Dhanlaxmi Salgare** - https://github.com/dhanlaxmi09
+- **Madhura Agnihotri** - https://github.com/agnihotrimadhura2007-a11y 
 - Built for Hack-AI-thon 2025-26.
 
   ## ❤️ Acknowledgments
