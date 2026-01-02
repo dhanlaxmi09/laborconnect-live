@@ -1,8 +1,17 @@
 import { useState, useCallback, useEffect } from 'react';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { demoWorkers, Worker } from '@/lib/demoWorkers';
 import { useToast } from '@/hooks/use-toast';
+
+export interface Worker {
+  id: string;
+  name: string;
+  skill: string;
+  phone: string;
+  available: boolean;
+  lat: number;
+  lng: number;
+}
 
 export function useWorkers() {
   const [workers, setWorkers] = useState<Worker[]>([]);
@@ -11,7 +20,6 @@ export function useWorkers() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [noResults, setNoResults] = useState(false);
-  const [usingDemoData, setUsingDemoData] = useState(false);
   const { toast } = useToast();
 
   // Fetch workers from Firestore on mount
@@ -23,10 +31,9 @@ export function useWorkers() {
         const snapshot = await getDocs(profilesRef);
         
         if (snapshot.empty) {
-          console.log('No profiles in Firestore, using demo data');
-          setWorkers(demoWorkers);
-          setFilteredWorkers(demoWorkers);
-          setUsingDemoData(true);
+          console.log('No profiles in Firestore');
+          setWorkers([]);
+          setFilteredWorkers([]);
         } else {
           const firestoreWorkers: Worker[] = snapshot.docs.map(doc => {
             const data = doc.data();
@@ -43,18 +50,16 @@ export function useWorkers() {
           console.log(`Loaded ${firestoreWorkers.length} workers from Firestore`);
           setWorkers(firestoreWorkers);
           setFilteredWorkers(firestoreWorkers);
-          setUsingDemoData(false);
         }
       } catch (error) {
         console.error('Error fetching from Firestore:', error);
         toast({
-          title: "Using Demo Data",
-          description: "Could not connect to database. Showing demo workers.",
-          variant: "default",
+          title: "Connection Error",
+          description: "Could not connect to database. Please try again later.",
+          variant: "destructive",
         });
-        setWorkers(demoWorkers);
-        setFilteredWorkers(demoWorkers);
-        setUsingDemoData(true);
+        setWorkers([]);
+        setFilteredWorkers([]);
       } finally {
         setInitialLoading(false);
       }
@@ -177,7 +182,14 @@ Return only the skill names, nothing else.`
       const profilesRef = collection(db, 'profiles');
       const snapshot = await getDocs(profilesRef);
       
-      if (!snapshot.empty) {
+      if (snapshot.empty) {
+        setWorkers([]);
+        setFilteredWorkers([]);
+        toast({
+          title: "No Workers",
+          description: "No workers registered yet.",
+        });
+      } else {
         const firestoreWorkers: Worker[] = snapshot.docs.map(doc => {
           const data = doc.data();
           return {
@@ -192,7 +204,6 @@ Return only the skill names, nothing else.`
         });
         setWorkers(firestoreWorkers);
         setFilteredWorkers(firestoreWorkers);
-        setUsingDemoData(false);
         toast({
           title: "Refreshed",
           description: `Loaded ${firestoreWorkers.length} workers from database.`,
@@ -200,6 +211,11 @@ Return only the skill names, nothing else.`
       }
     } catch (error) {
       console.error('Error refreshing workers:', error);
+      toast({
+        title: "Error",
+        description: "Could not refresh workers.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -214,7 +230,6 @@ Return only the skill names, nothing else.`
     clearSearch,
     searchQuery,
     noResults,
-    usingDemoData,
     refreshWorkers
   };
 }
