@@ -22,6 +22,12 @@ const LaborerAuth = () => {
 
   // Check for existing session on mount
   useEffect(() => {
+    const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
+    if (!apiKey || apiKey === "YOUR_FIREBASE_API_KEY") {
+      setCheckingAuth(false);
+      return;
+    }
+
     // Set persistence to local
     setPersistence(auth, browserLocalPersistence).catch(console.error);
 
@@ -49,6 +55,17 @@ const LaborerAuth = () => {
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
+    if (!apiKey || apiKey === "YOUR_FIREBASE_API_KEY") {
+      // Demo mode - skip Firebase auth
+      toast({
+        title: "Demo Mode",
+        description: "Firebase not configured. Proceeding to profile setup.",
+      });
+      navigate('/labor/profile', { state: { phone, isDemo: true } });
+      return;
+    }
+
     setLoading(true);
     try {
       setupRecaptcha();
