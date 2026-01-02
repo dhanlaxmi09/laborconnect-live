@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { Worker } from '@/lib/demoWorkers';
 import { Phone, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -18,24 +19,11 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-export interface Worker {
-  id: string;
-  name: string;
-  skill: string;
-  phone: string;
-  available: boolean;
-  lat: number;
-  lng: number;
-}
-
 interface WorkerMapProps {
   workers: Worker[];
   selectedWorker: Worker | null;
   onSelectWorker: (worker: Worker | null) => void;
 }
-
-// Solapur center coordinates
-const SOLAPUR_CENTER: [number, number] = [17.6599, 75.9064];
 
 export function WorkerMap({ workers, selectedWorker, onSelectWorker }: WorkerMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -50,7 +38,7 @@ export function WorkerMap({ workers, selectedWorker, onSelectWorker }: WorkerMap
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
-    const map = L.map(mapContainerRef.current).setView(SOLAPUR_CENTER, 14);
+    const map = L.map(mapContainerRef.current).setView([17.6599, 75.9064], 14);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -73,12 +61,6 @@ export function WorkerMap({ workers, selectedWorker, onSelectWorker }: WorkerMap
     // Clear existing markers
     markersRef.current.forEach(marker => marker.remove());
     markersRef.current = [];
-
-    // If no workers, center on Solapur
-    if (workers.length === 0) {
-      mapRef.current.setView(SOLAPUR_CENTER, 14);
-      return;
-    }
 
     // Add new markers
     workers.forEach(worker => {
