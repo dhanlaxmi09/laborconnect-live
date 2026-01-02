@@ -1,16 +1,15 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Phone, X, AlertCircle, RefreshCw, Database } from 'lucide-react';
+import { Phone, X, AlertCircle, RefreshCw, Database, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { WorkerMap } from '@/components/WorkerMap';
 import { SearchBar } from '@/components/SearchBar';
 import { useWorkers } from '@/hooks/useWorkers';
-import { Worker } from '@/lib/demoWorkers';
+import { Worker } from '@/hooks/useWorkers';
 import { AppHeader } from '@/components/AppHeader';
 
 const HireLabor = () => {
-  const { workers, loading, initialLoading, searchWorkers, clearSearch, searchQuery, noResults, usingDemoData, refreshWorkers } = useWorkers();
+  const { workers, loading, initialLoading, searchWorkers, clearSearch, searchQuery, noResults, refreshWorkers } = useWorkers();
   const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
 
   if (initialLoading) {
@@ -23,6 +22,8 @@ const HireLabor = () => {
       </div>
     );
   }
+
+  const isEmpty = workers.length === 0 && !searchQuery;
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -43,11 +44,6 @@ const HireLabor = () => {
               <span className="text-muted-foreground">Busy</span>
             </div>
             <div className="ml-auto flex items-center gap-2">
-              {usingDemoData && (
-                <span className="text-xs text-amber-600 bg-amber-100 px-2 py-1 rounded">
-                  Demo Data
-                </span>
-              )}
               <Button
                 variant="ghost"
                 size="sm"
@@ -85,12 +81,37 @@ const HireLabor = () => {
       </header>
 
       {/* Map */}
-      <div className="flex-1 pt-36">
+      <div className="flex-1 pt-36 relative">
         <WorkerMap 
           workers={workers} 
           selectedWorker={selectedWorker}
           onSelectWorker={setSelectedWorker}
         />
+        
+        {/* Empty State Overlay */}
+        {isEmpty && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none pt-36">
+            <div className="bg-background/90 backdrop-blur-sm rounded-xl p-8 shadow-lg text-center max-w-sm mx-4 pointer-events-auto">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                <Users className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">No Workers Registered Yet</h3>
+              <p className="text-muted-foreground text-sm mb-4">
+                Be the first to register as a worker and get hired by employers in Solapur!
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={refreshWorkers}
+                disabled={loading}
+                className="gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Results List (shows when search is active) */}
