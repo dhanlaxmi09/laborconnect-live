@@ -43,11 +43,6 @@ const HireLabor = () => {
               <span className="text-muted-foreground">Busy</span>
             </div>
             <div className="ml-auto flex items-center gap-2">
-              {usingDemoData && (
-                <span className="text-xs text-amber-600 bg-amber-100 px-2 py-1 rounded">
-                  Demo Data
-                </span>
-              )}
               <Button
                 variant="ghost"
                 size="sm"

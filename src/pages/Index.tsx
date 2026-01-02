@@ -66,8 +66,14 @@ const Index = () => {
         </main>
 
         {/* Footer */}
-        <footer className="p-6 text-center text-sm text-primary bg-neutral-100">
-          Connecting hands with opportunities
+        <footer className="relative overflow-hidden bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border-t border-primary/20">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
+          <div className="relative flex items-center justify-center gap-3 py-5">
+            <span className="text-2xl">🤝</span>
+            <span className="text-primary font-medium tracking-wide text-base">
+              Connecting hands with opportunities
+            </span>
+          </div>
         </footer>
       </div>
     </>
